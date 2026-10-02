@@ -17,6 +17,7 @@ jobs:
       - name: Upload DTok to Yandex Object Storage
         run: |
           aws s3 sync . s3://dtok-demo-site-2026 \
+            --region ru-central1 \
             --endpoint-url https://storage.yandexcloud.net \
             --delete \
             --exclude ".git/*" \
