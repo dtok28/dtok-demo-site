@@ -1,0 +1,27 @@
+name: Deploy DTok to Yandex Object Storage
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download DTok files
+        uses: actions/checkout@v4
+
+      - name: Upload DTok to Yandex Object Storage
+        run: |
+          aws s3 sync . s3://dtok-demo-site-2026 \
+            --endpoint-url https://storage.yandexcloud.net \
+            --delete \
+            --exclude ".git/*" \
+            --exclude ".github/*"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.YANDEX_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.YANDEX_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ru-central1
