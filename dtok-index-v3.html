@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>DTok — Olympus Storm Demo</title>
+<style>
+:root{
+  --bg:#030712;
+  --panel:#0b1220;
+  --panel2:#101a2b;
+  --line:#33435d;
+  --gold:#ffd34d;
+  --gold2:#ff9f1c;
+  --text:#f7f9ff;
+  --muted:#8b9ab3;
+  --pink:#ff315c;
+  --blue:#55a7ff;
+  --green:#45d483;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+body{min-height:100dvh;overflow-x:hidden}
+button{font:inherit;color:inherit}
+.app{
+  min-height:100dvh;
+  background:
+    radial-gradient(circle at 50% 8%,#172b4d 0,#0a1222 28%,#030712 66%),
+    linear-gradient(180deg,#07101d,#02050b);
+  position:relative;
+  overflow:hidden;
+}
+.app:before,.app:after{
+  content:"";position:absolute;inset:auto;
+  pointer-events:none;opacity:.22;
+}
+.app:before{
+  width:70vw;height:70vw;max-width:700px;max-height:700px;
+  left:50%;top:10%;transform:translateX(-50%);
+  border-radius:50%;
+  background:radial-gradient(circle,#ffcc4d33 0,#ff7b0010 35%,transparent 68%);
+  filter:blur(8px);
+}
+.shell{
+  width:min(1120px,100%);
+  min-height:100dvh;
+  margin:auto;
+  padding:clamp(10px,2vw,22px);
+  display:flex;
+  flex-direction:column;
+  gap:clamp(9px,1.5vw,16px);
+  position:relative;
+  z-index:1;
+}
+.topbar{display:none;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;
+}
+.brand{
+  display:flex;align-items:center;gap:10px;
+}
+.logo{
+  width:44px;height:44px;border-radius:13px;
+  display:grid;place-items:center;
+  font-weight:1000;font-size:23px;
+  color:#1b2130;
+  background:linear-gradient(145deg,#fff1a0,#d28b1b);
+  box-shadow:0 0 24px #ffcb4b33,inset 0 1px #fff9;
+}
+.brand h1{margin:0;font-size:clamp(18px,3vw,26px);letter-spacing:.3px}
+.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:1.2px}
+.balanceTop{
+  border:1px solid #344762;background:#0b1424cc;
+  border-radius:13px;padding:8px 12px;text-align:right;
+  min-width:105px;
+}
+.balanceTop span{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:1px}
+.balanceTop strong{color:var(--gold);font-size:18px}
+.game{
+  width:100%;
+  border:1px solid #30415d;
+  border-radius:clamp(14px,2vw,22px);
+  padding:clamp(8px,1.4vw,14px);
+  background:linear-gradient(180deg,#0b1526f2,#060c18f7);
+  box-shadow:0 22px 60px #0008,inset 0 1px #ffffff12;
+}
+.reels{
+  width:100%;
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:clamp(4px,1vw,10px);
+  position:relative;
+}
+.reel{
+  min-width:0;
+  aspect-ratio: .67;
+  border:1px solid #455876;
+  border-radius:clamp(7px,1.2vw,13px);
+  overflow:hidden;
+  background:linear-gradient(180deg,#15243b,#080f1d);
+  box-shadow:inset 0 0 22px #000b,0 4px 12px #0008;
+  display:grid;
+  grid-template-rows:repeat(3,1fr);
+  gap:clamp(3px,.7vw,7px);
+  padding:clamp(3px,.7vw,7px);
+}
+.cell{
+  min-height:0;
+  display:grid;place-items:center;
+  border-radius:clamp(6px,1vw,11px);
+  border:1px solid #eef3ff;
+  background:linear-gradient(145deg,#f3f6ff 0,#bdc9dc 52%,#6f7c91 100%);
+  color:#0b1322;
+  font-size:clamp(25px,5vw,58px);
+  line-height:1;
+  box-shadow:inset 0 -10px 16px #0003,0 3px 7px #0008;
+  user-select:none;
+}
+.cell.wild{
+  background:linear-gradient(145deg,#fff0a0,#e1a329 58%,#8e5510);
+  border-color:#fff2ad;
+  box-shadow:inset 0 -10px 16px #0003,0 0 18px #ffca3a55;
+  font-weight:1000;
+}
+.cell.win{
+  animation:win .55s ease-in-out infinite alternate;
+}
+@keyframes win{
+  to{transform:scale(1.045);filter:brightness(1.3);box-shadow:0 0 24px #ffd24d,inset 0 -10px 16px #0003}
+}
+.payline{
+  position:absolute;left:0;right:0;top:50%;height:3px;
+  transform:translateY(-50%);
+  background:var(--pink);box-shadow:0 0 14px #ff315c;
+  pointer-events:none;border-radius:9px;opacity:.9;
+}
+.infoRow{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:10px;
+  margin-top:clamp(8px,1.5vw,14px);
+}
+.stat{
+  min-height:46px;border:1px solid #2f405b;border-radius:12px;
+  background:#0c1627;display:flex;align-items:center;justify-content:center;
+  padding:6px 10px;
+}
+.stat span{font-size:9px;color:var(--muted);display:block;text-transform:uppercase;letter-spacing:1px;text-align:center}
+.stat strong{display:block;color:var(--gold);font-size:clamp(16px,2.5vw,23px);text-align:center}
+.stat.left{justify-self:start;width:100%}
+.stat.right{justify-self:end;width:100%}
+.resultText{font-size:clamp(11px,1.7vw,15px);color:#fff}
+.controls{
+  display:grid;
+  grid-template-columns:1fr minmax(130px,190px) 1fr;
+  gap:clamp(8px,1.5vw,14px);
+  align-items:center;
+  margin-top:clamp(9px,1.5vw,14px);
+}
+.bet{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  border:1px solid #344761;background:#0b1525;border-radius:14px;
+  padding:7px;
+}
+.bet button,.auto{
+  border:1px solid #435673;background:#131f33;border-radius:10px;
+  min-width:40px;min-height:40px;cursor:pointer;
+  font-size:23px;font-weight:800;
+}
+.bet button:active,.auto:active,.spin:active{transform:scale(.96)}
+.betValue{text-align:center;min-width:54px}
+.betValue span{display:block;color:var(--muted);font-size:8px;text-transform:uppercase}
+.betValue strong{font-size:18px;color:#fff}
+.spin{
+  min-height:62px;border-radius:50%;
+  border:2px solid #fff3a0;
+  cursor:pointer;
+  background:radial-gradient(circle at 35% 28%,#fff4a7,#ffbf27 48%,#a86408 100%);
+  color:#1a2130;font-weight:1000;font-size:clamp(15px,2vw,21px);
+  box-shadow:0 0 0 5px #ffbd3030,0 0 32px #ffb51c55,inset 0 2px #fff9;
+}
+.spin[disabled]{opacity:.55;cursor:not-allowed}
+.auto{
+  width:100%;color:#dce6f7;font-size:13px;
+}
+.auto.on{border-color:#45d483;color:#45d483;background:#103021}
+.message{
+  min-height:20px;text-align:center;color:var(--muted);
+  font-size:11px;margin-top:6px;
+}
+.winBanner{
+  position:fixed;left:50%;top:50%;z-index:10;
+  transform:translate(-50%,-50%) scale(.7);
+  opacity:0;pointer-events:none;text-align:center;
+  padding:22px 28px;border:1px solid #ffe07a;border-radius:18px;
+  background:#101a2df2;box-shadow:0 0 50px #ffc02b55;
+}
+.winBanner.show{animation:banner 1.35s ease-out}
+.winBanner strong{display:block;color:var(--gold);font-size:clamp(34px,8vw,70px)}
+.winBanner span{font-size:11px;letter-spacing:1px;color:#fff}
+@keyframes banner{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}
+  18%,70%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.08)}
+}
+.footer{
+  margin-top:auto;text-align:center;color:#61718b;font-size:9px;letter-spacing:.4px;
+  padding:3px 0 env(safe-area-inset-bottom,3px);
+}
+@media(max-width:700px){
+  .shell{padding:10px 9px 8px;gap:8px}
+  .logo{width:39px;height:39px;border-radius:11px;font-size:20px}
+  .brand h1{font-size:18px}
+  .balanceTop{padding:6px 9px;min-width:94px}
+  .balanceTop strong{font-size:16px}
+  .game{padding:6px;border-radius:16px}
+  .reels{gap:4px}
+  .reel{padding:3px;gap:3px;border-radius:8px}
+  .cell{font-size:clamp(20px,7.5vw,40px);border-radius:6px}
+  .infoRow{gap:6px}
+  .stat{min-height:43px;padding:5px 6px}
+  .controls{grid-template-columns:1fr 88px 1fr;gap:7px}
+  .bet{padding:5px;gap:3px}
+  .bet button{min-width:34px;min-height:36px;font-size:19px}
+  .betValue{min-width:43px}
+  .betValue strong{font-size:16px}
+  .spin{min-height:76px}
+  .auto{min-height:42px;font-size:11px}
+}
+@media(max-width:390px){
+  .shell{padding-left:7px;padding-right:7px}
+  .cell{font-size:clamp(18px,7vw,33px)}
+  .stat span{font-size:8px}
+  .controls{grid-template-columns:1fr 78px 1fr}
+}
+@media(min-width:701px){
+  .game{padding:14px}
+  .reels{max-height:58vh}
+  .reel{max-height:520px}
+}
+@media(orientation:landscape) and (max-height:600px){
+  .shell{padding:7px 14px;gap:6px}
+  .topbar{display:none;height:42px}
+  .logo{width:36px;height:36px}
+  .game{padding:6px}
+  .reel{aspect-ratio:1.05}
+  .cell{font-size:clamp(18px,4vw,38px)}
+  .infoRow,.controls{margin-top:5px}
+  .footer{display:none}
+}
+
+/* DTok Mega UI */
+.header2{position:sticky;top:0;z-index:30;background:#07101deF;border-bottom:1px solid #263752;backdrop-filter:blur(16px);padding:8px 0}.nav2{width:min(1120px,100%);margin:auto;padding:0 12px;display:flex;align-items:center;gap:8px}.nav2 .brand2{display:flex;align-items:center;gap:8px;font-weight:900}.brand2 .mark2{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(145deg,#fff1a0,#d28b1b);color:#18202e}.nav2 button{border:1px solid #2d3f5b;background:#0d1727;border-radius:10px;padding:9px 11px}.nav2 .grow{flex:1}.search2{width:min(300px,35vw);padding:9px 11px;border-radius:10px;border:1px solid #2d3f5b;background:#0b1525;outline:0}.mega{width:min(1120px,100%);margin:10px auto 0;padding:0 12px;display:flex;gap:7px;overflow:auto}.mega button{white-space:nowrap;border:1px solid #293b57;background:#0b1525;border-radius:999px;padding:8px 12px;color:#b7c3d5}.mega button.active{background:#1a2a43;color:#fff;border-color:#526b8e}.catalog{width:min(1120px,100%);margin:15px auto 0;padding:0 12px}.catalog h2{font-size:20px;margin:0 0 10px}.catalog-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.catalog-card{border:1px solid #293b57;background:#0b1424;border-radius:14px;padding:8px}.catalog-art{aspect-ratio:1.25;border-radius:10px;display:grid;place-items:center;font-size:40px;background:radial-gradient(circle,#344b70,#0d1727 68%)}.catalog-card b{display:block;margin-top:7px}.catalog-card small{color:#7f8da4}.catalog-card button{width:100%;margin-top:7px;border:0;border-radius:9px;padding:8px;background:#17263d}.mobile2{display:none;position:fixed;bottom:0;left:0;right:0;z-index:35;background:#07101df2;border-top:1px solid #293b57;padding:6px env(safe-area-inset-left) calc(6px + env(safe-area-inset-bottom));backdrop-filter:blur(16px)}.mobile2 button{flex:1;border:0;background:transparent;color:#8290a6;font-size:10px}.mobile2 button.active{color:#fff}.mobile2 i{font-style:normal;font-size:19px;display:block}.drawer{position:fixed;inset:0;z-index:100;background:#0009;display:none}.drawer.open{display:block}.drawer>div{width:min(390px,88%);height:100%;background:#091321;border-right:1px solid #30425e;padding:18px;box-shadow:30px 0 80px #000b}.drawer h2{margin-top:0}.drawer button{display:block;width:100%;text-align:left;border:1px solid #263852;background:#0d1829;border-radius:11px;padding:12px;margin:7px 0}.notice2{padding:12px;border:1px solid #2d415e;background:#0c1728;border-radius:12px;color:#aab7ca;font-size:12px;line-height:1.45}@media(max-width:700px){.search2{display:none}.catalog-grid{grid-template-columns:repeat(2,1fr)}.mobile2{display:flex}.catalog{padding-bottom:75px}.mega{padding-bottom:2px}}
+</style>
+</head>
+<body>
+
+<header class="header2"><div class="nav2"><button id="menu2">☰</button><div class="brand2"><div class="mark2">D</div><span>DTok</span></div><input id="search2" class="search2" placeholder="Поиск игр..."><div class="grow"></div><button id="coins2">🪙 <span id="coinsValue2">8 750</span></button><button id="profile2">👤</button></div></header>
+<nav class="mega" id="mega2"><button class="active" data-cat2="all">🎰 Казино</button><button data-cat2="hot">🔥 Популярные</button><button data-cat2="slots">🎰 Слоты</button><button data-cat2="table">🎲 Настольные</button><button data-cat2="new">✨ Новинки</button><button data-cat2="fav">⭐ Избранное</button></nav>
+<section class="catalog"><h2 id="catalogTitle">Игры в тренде</h2><div class="catalog-grid" id="catalogGrid"></div></section>
+<nav class="mobile2"><button class="active" data-cat2="all"><i>🎰</i>Казино</button><button data-cat2="hot"><i>🔥</i>Для вас</button><button data-cat2="fav"><i>⭐</i>Избранное</button><button id="menuMobile2"><i>☰</i>Меню</button></nav>
+<div class="drawer" id="drawer2"><div><button id="closeDrawer2">✕ Закрыть</button><h2>DTok</h2><div class="notice2">DEMO CASINO · только виртуальные Demo Coins</div><button id="history2">🕘 История игр</button><button id="reset2">♻️ Сбросить Demo Coins</button><button id="about2">ℹ️ О проекте</button></div></div>
+<script>
+(()=>{const G=[['Olympus Storm','🏛️','slots'],['Diamond Rush','💎','slots'],['Thunder Gods','⚡','new'],['Dragon Gold','🐉','slots'],['Royal Crown','👑','slots'],['DTok Dice','🎲','hot'],['Mines Demo','💣','hot'],['Roulette Demo','🔴','table'],['Blackjack Demo','🃏','table'],['Poker Demo','♠️','table'],['Star Burst','⭐','new'],['Unicorn Wild','🦄','new']];let cat='all',fav=JSON.parse(localStorage.dtokMegaFav||'[]');const grid=document.getElementById('catalogGrid'),coins=document.getElementById('coinsValue2');function render(){let q=(document.getElementById('search2')?.value||'').toLowerCase();let a=G.filter(x=>(cat==='all'||x[2]===cat||(cat==='fav'&&fav.includes(x[0])))&&x[0].toLowerCase().includes(q));grid.innerHTML=a.map(x=>`<article class="catalog-card"><div class="catalog-art">${x[1]}</div><b>${x[0]}</b><small>Demo · ${x[2]}</small><button data-open="${x[0]}">▶ Играть</button></article>`).join('')||'<div class="notice2">Игры не найдены.</div>';document.getElementById('catalogTitle').textContent=cat==='fav'?'Избранное':cat==='hot'?'Популярные игры':cat==='new'?'Новинки':'Игры в тренде'}document.querySelectorAll('[data-cat2]').forEach(b=>b.onclick=()=>{cat=b.dataset.cat2;document.querySelectorAll('[data-cat2]').forEach(x=>x.classList.toggle('active',x.dataset.cat2===cat));render()});document.getElementById('search2').oninput=render;grid.onclick=e=>{let b=e.target.closest('[data-open]');if(!b)return;let n=b.dataset.open;if(n==='Olympus Storm'){document.querySelector('.game')?.scrollIntoView({behavior:'smooth'});toastMega('Olympus Storm открыт ниже');}else toastMega(n+' — демо-модуль готов к запуску')};function toastMega(t){let x=document.createElement('div');x.textContent=t;x.style='position:fixed;left:50%;bottom:85px;transform:translateX(-50%);z-index:200;background:#132138;border:1px solid #405775;border-radius:11px;padding:10px 14px';document.body.append(x);setTimeout(()=>x.remove(),1800)}document.getElementById('menu2').onclick=document.getElementById('menuMobile2').onclick=()=>document.getElementById('drawer2').classList.add('open');document.getElementById('closeDrawer2').onclick=()=>document.getElementById('drawer2').classList.remove('open');document.getElementById('reset2').onclick=()=>{localStorage.removeItem('dtokMegaFav');localStorage.removeItem('dtokBalance');location.reload()};document.getElementById('about2').onclick=()=>alert('DTok — демонстрационное казино. Все монеты виртуальные.');document.getElementById('history2').onclick=()=>alert('История текущей демо-сессии находится в логике игры.');document.getElementById('profile2').onclick=()=>alert('DTok Demo Player\nDemo Coins: '+(localStorage.dtokBalance||8750));render();})();
+</script>
+
+<div class="app">
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">W</div>
+        <div>
+          <h1>DTok</h1>
+          <small>OLYMPUS STORM · DEMO</small>
+        </div>
+      </div>
+      <div class="balanceTop">
+        <span>Demo Coins</span>
+        <strong id="topBalance">8 750</strong>
+      </div>
+    </header>
+
+    <section class="game" aria-label="Игровое поле">
+      <div class="reels" id="reels">
+        <div class="payline"></div>
+      </div>
+
+      <div class="infoRow">
+        <div class="stat left">
+          <div><span>Ставка</span><strong id="betInfo">100</strong></div>
+        </div>
+        <div class="resultText" id="result">WIN ×12</div>
+        <div class="stat right">
+          <div><span>Баланс</span><strong id="balance">8 750</strong></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="bet">
+          <button id="minus" aria-label="Уменьшить ставку">−</button>
+          <div class="betValue"><span>Bet</span><strong id="betValue">100</strong></div>
+          <button id="plus" aria-label="Увеличить ставку">+</button>
+        </div>
+
+        <button class="spin" id="spin" aria-label="Крутить">SPIN</button>
+
+        <button class="auto" id="auto" aria-pressed="false">AUTO: OFF</button>
+      </div>
+      <div class="message" id="message">Все монеты виртуальные · DEMO COINS</div>
+    </section>
+
+    <footer class="footer">DTok · Exact visual prototype · DEMO COINS</footer>
+  </main>
+  <div class="winBanner" id="winBanner">
+    <strong id="winAmount">+1 200</strong>
+    <span>WIN · DEMO COINS</span>
+  </div>
+</div>
+
+<script>
+(() => {
+  const symbols = ["⚡","💎","🏛️","🔱","🪖","🍷","⭐","♦️","🦄"];
+  const special = "W";
+  let balance = 8750;
+  let bet = 100;
+  let spinning = false;
+  let auto = false;
+
+  const reelsEl = document.getElementById("reels");
+  const balanceEl = document.getElementById("balance");
+  const topBalanceEl = document.getElementById("topBalance");
+  const betEl = document.getElementById("betValue");
+  const betInfoEl = document.getElementById("betInfo");
+  const resultEl = document.getElementById("result");
+  const messageEl = document.getElementById("message");
+  const spinBtn = document.getElementById("spin");
+  const autoBtn = document.getElementById("auto");
+  const banner = document.getElementById("winBanner");
+  const winAmount = document.getElementById("winAmount");
+
+  const fmt = n => n.toLocaleString("ru-RU");
+
+  function randomSymbol() {
+    return symbols[Math.floor(Math.random() * symbols.length)];
+  }
+
+  function makeReel() {
+    const reel = document.createElement("div");
+    reel.className = "reel";
+    for (let r = 0; r < 3; r++) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.textContent = randomSymbol();
+      reel.appendChild(cell);
+    }
+    return reel;
+  }
+
+  function build() {
+    reelsEl.querySelectorAll(".reel").forEach(x => x.remove());
+    for (let i = 0; i < 5; i++) reelsEl.appendChild(makeReel());
+  }
+
+  function updateUI() {
+    const b = fmt(balance);
+    balanceEl.textContent = b;
+    topBalanceEl.textContent = b;
+    betEl.textContent = fmt(bet);
+    betInfoEl.textContent = fmt(bet);
+    spinBtn.disabled = spinning || balance < bet;
+  }
+
+  function setCells(values, winCells = []) {
+    const reels = [...reelsEl.querySelectorAll(".reel")];
+    reels.forEach((reel, i) => {
+      const cells = [...reel.querySelectorAll(".cell")];
+      cells.forEach((cell, r) => {
+        cell.classList.remove("win","wild");
+        const value = values[i][r];
+        cell.textContent = value;
+        if (value === special) cell.classList.add("wild");
+        if (winCells.some(x => x.i === i && x.r === r)) cell.classList.add("win");
+      });
+    });
+  }
+
+  function randomBoard() {
+    return Array.from({length:5}, () => [randomSymbol(),randomSymbol(),randomSymbol()]);
+  }
+
+  function winningBoard() {
+    const board = randomBoard();
+    const winSymbol = Math.random() < .35 ? "W" : "🦄";
+    for (let i = 0; i < 5; i++) board[i][1] = winSymbol;
+    return {board, winSymbol};
+  }
+
+  function showWin(amount) {
+    winAmount.textContent = "+" + fmt(amount);
+    banner.classList.remove("show");
+    void banner.offsetWidth;
+    banner.classList.add("show");
+  }
+
+  function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+  async function spin() {
+    if (spinning || balance < bet) return;
+    spinning = true;
+    balance -= bet;
+    updateUI();
+    resultEl.textContent = "SPINNING…";
+    messageEl.textContent = "Барабаны вращаются…";
+
+    const reels = [...reelsEl.querySelectorAll(".reel")];
+    reels.forEach((reel, i) => {
+      reel.animate(
+        [
+          {transform:"translateY(0)",filter:"blur(0)"},
+          {transform:"translateY(3px)",filter:"blur(2px)"},
+          {transform:"translateY(0)",filter:"blur(0)"}
+        ],
+        {duration:560 + i*120,iterations:2,easing:"ease-in-out"}
+      );
+    });
+
+    await sleep(850);
+    const result = winningBoard();
+    const winCells = Array.from({length:5}, (_,i) => ({i,r:1}));
+    setCells(result.board, winCells);
+
+    const multiplier = result.winSymbol === "W" ? 15 : 12;
+    const payout = bet * multiplier;
+    balance += payout;
+    resultEl.textContent = "WIN ×" + multiplier;
+    messageEl.textContent = "Пять символов на центральной линии!";
+    showWin(payout);
+    updateUI();
+
+    spinning = false;
+    updateUI();
+    if (auto && balance >= bet) setTimeout(spin, 900);
+    else if (auto) {
+      auto = false;
+      autoBtn.classList.remove("on");
+      autoBtn.textContent = "AUTO: OFF";
+      autoBtn.setAttribute("aria-pressed","false");
+      messageEl.textContent = "Автоигра остановлена: недостаточно Demo Coins.";
+    }
+  }
+
+  document.getElementById("minus").addEventListener("click", () => {
+    if (spinning) return;
+    bet = Math.max(10, bet - 10);
+    updateUI();
+  });
+
+  document.getElementById("plus").addEventListener("click", () => {
+    if (spinning) return;
+    bet = Math.min(1000, bet + 10);
+    updateUI();
+  });
+
+  spinBtn.addEventListener("click", spin);
+
+  autoBtn.addEventListener("click", () => {
+    auto = !auto;
+    autoBtn.classList.toggle("on", auto);
+    autoBtn.textContent = auto ? "AUTO: ON" : "AUTO: OFF";
+    autoBtn.setAttribute("aria-pressed", String(auto));
+    if (auto && !spinning) spin();
+  });
+
+  build();
+  updateUI();
+})();
+</script>
+</body>
+</html>
